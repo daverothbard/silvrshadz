@@ -1,0 +1,17 @@
+[build]
+  command = "hugo"
+  publish = "public"
+
+[build.environment]
+  HUGO_VERSION = "0.155.3"
+```
+
+Save it. Then push it to GitHub:
+```
+git add -A
+```
+```
+git commit -m "Add Netlify config"
+```
+```
+git push
