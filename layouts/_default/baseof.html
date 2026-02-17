@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ .Title }} | Silvrshadz Reflections</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="/" class="site-title">Silvrshadz Reflections</a>
+  </header>
+
+  <nav class="site-nav">
+    <a href="/" {{ if .IsHome }}class="active"{{ end }}>Photographs</a>
+    <a href="/about/" {{ if eq .Title "About" }}class="active"{{ end }}>About</a>
+  </nav>
+
+  {{ block "main" . }}{{ end }}
+
+  <footer class="site-footer">
+    &copy; {{ .Site.Params.copyright }} {{ .Site.Params.author }}. All rights reserved.
+  </footer>
+
+  {{ block "scripts" . }}{{ end }}
+
+</body>
+</html>

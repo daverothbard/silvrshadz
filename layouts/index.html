@@ -1,0 +1,127 @@
+{{ define "main" }}
+
+<div class="filter-bar" id="filterBar">
+  <button class="filter-btn active" data-filter="all">All</button>
+</div>
+
+<div class="gallery-container">
+  <div class="photo-grid" id="photoGrid">
+    {{ range where .Site.RegularPages "Section" "photos" }}
+    <div class="photo-card" data-region="{{ .Params.region }}" data-title="{{ .Title }}" data-location="{{ .Params.location }}" data-year="{{ .Params.year }}" data-src="{{ .Params.image }}">
+      <img src="{{ .Params.image }}" alt="{{ .Title }}" loading="lazy">
+      <div class="card-overlay">
+        <div class="card-title">{{ .Title }}</div>
+        <div class="card-meta">{{ .Params.location }} &middot; {{ .Params.year }}</div>
+      </div>
+    </div>
+    {{ end }}
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" aria-label="Close">&#215;</button>
+  <button class="lb-nav lb-prev" aria-label="Previous">&#8249;</button>
+  <button class="lb-nav lb-next" aria-label="Next">&#8250;</button>
+  <div class="lb-img-wrap">
+    <img id="lbImg" src="" alt="">
+  </div>
+  <div class="lb-info">
+    <div class="lb-title" id="lbTitle"></div>
+    <div class="lb-meta" id="lbMeta"></div>
+  </div>
+  <div class="lb-counter" id="lbCounter"></div>
+</div>
+
+{{ end }}
+
+{{ define "scripts" }}
+<script>
+// Build filter buttons from regions that actually exist
+var cards = document.querySelectorAll('.photo-card');
+var regions = [];
+cards.forEach(function(c) {
+  var r = c.getAttribute('data-region');
+  if (r && regions.indexOf(r) === -1) regions.push(r);
+});
+regions.sort();
+var bar = document.getElementById('filterBar');
+regions.forEach(function(r) {
+  var b = document.createElement('button');
+  b.className = 'filter-btn';
+  b.setAttribute('data-filter', r);
+  b.textContent = r.charAt(0).toUpperCase() + r.slice(1);
+  bar.appendChild(b);
+});
+
+// Filtering
+var allCards = Array.prototype.slice.call(cards);
+var visibleCards = allCards.slice();
+
+document.querySelectorAll('.filter-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    var f = btn.getAttribute('data-filter');
+    allCards.forEach(function(c) {
+      if (f === 'all' || c.getAttribute('data-region') === f) {
+        c.style.display = '';
+      } else {
+        c.style.display = 'none';
+      }
+    });
+    visibleCards = allCards.filter(function(c) { return c.style.display !== 'none'; });
+  });
+});
+
+// Lightbox
+var lb = document.getElementById('lightbox');
+var lbImg = document.getElementById('lbImg');
+var lbTitle = document.getElementById('lbTitle');
+var lbMeta = document.getElementById('lbMeta');
+var lbCounter = document.getElementById('lbCounter');
+var ci = 0;
+
+function openLb(i) {
+  ci = i;
+  updateLb();
+  lb.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLb() {
+  lb.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function updateLb() {
+  var c = visibleCards[ci];
+  lbImg.src = c.getAttribute('data-src');
+  lbImg.alt = c.getAttribute('data-title');
+  lbTitle.textContent = c.getAttribute('data-title');
+  lbMeta.textContent = c.getAttribute('data-location') + ' \u00B7 ' + c.getAttribute('data-year');
+  lbCounter.textContent = (ci + 1) + ' / ' + visibleCards.length;
+}
+
+function nextLb() { ci = (ci + 1) % visibleCards.length; updateLb(); }
+function prevLb() { ci = (ci - 1 + visibleCards.length) % visibleCards.length; updateLb(); }
+
+allCards.forEach(function(c, i) {
+  c.addEventListener('click', function() {
+    var idx = visibleCards.indexOf(c);
+    if (idx !== -1) openLb(idx);
+  });
+});
+
+document.querySelector('.lb-close').addEventListener('click', closeLb);
+document.querySelector('.lb-prev').addEventListener('click', prevLb);
+document.querySelector('.lb-next').addEventListener('click', nextLb);
+lb.addEventListener('click', function(e) { if (e.target === lb) closeLb(); });
+
+document.addEventListener('keydown', function(e) {
+  if (!lb.classList.contains('active')) return;
+  if (e.key === 'Escape') closeLb();
+  if (e.key === 'ArrowRight') nextLb();
+  if (e.key === 'ArrowLeft') prevLb();
+});
+</script>
+{{ end }}

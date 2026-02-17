@@ -1,0 +1,16 @@
+tomlbaseURL = "https://silvrshadz.com/"
+languageCode = "en-us"
+title = "Silvrshadz Reflections"
+
+[params]
+  description = "Photographs by David Rothbard"
+  author = "David Rothbard"
+  copyright = "2026"
+
+[taxonomies]
+  region = "regions"
+
+[outputs]
+  home = ["HTML"]
+  section = ["HTML"]
+  taxonomy = ["HTML"]
