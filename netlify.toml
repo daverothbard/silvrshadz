@@ -6,12 +6,15 @@
   HUGO_VERSION = "0.155.3"
 ```
 
-Save it. Then push it to GitHub:
+Save, then push again:
+```
+cd ~\Documents\silvrshadz
+```
 ```
 git add -A
 ```
 ```
-git commit -m "Add Netlify config"
+git commit -m "Fix netlify config encoding"
 ```
 ```
 git push
