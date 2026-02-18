@@ -8,20 +8,41 @@
 </head>
 <body>
 
-  <header class="site-header">
-    <a href="/" class="site-title">Silvrshadz Reflections</a>
-  </header>
+  <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">&#9776;</button>
 
-  <nav class="site-nav">
-    <a href="/" {{ if .IsHome }}class="active"{{ end }}>Photographs</a>
-    <a href="/about/" {{ if eq .Title "About" }}class="active"{{ end }}>About</a>
-  </nav>
+  <div class="site-wrapper">
 
-  {{ block "main" . }}{{ end }}
+    <aside class="sidebar" id="sidebar">
+      <a href="/" class="site-title">Silvrshadz<br>Reflections</a>
+      <div class="site-tagline">Photographs by David Rothbard</div>
 
-  <footer class="site-footer">
-    &copy; {{ .Site.Params.copyright }} {{ .Site.Params.author }}. All rights reserved.
-  </footer>
+      <nav class="sidebar-nav">
+		<a href="/" {{ if .IsHome }}class="active"{{ end }}>Home</a>
+		<a href="/about/" {{ if eq .Title "About" }}class="active"{{ end }}>About</a>
+        <a href="/galleries/" {{ if eq .Section "galleries" }}class="active"{{ end }}>Photographs</a>
+      </nav>
+
+      {{ block "sidebar" . }}{{ end }}
+
+      <div class="sidebar-footer">
+        &copy; {{ .Site.Params.copyright }} {{ .Site.Params.author }}.<br>
+        All rights reserved.
+      </div>
+    </aside>
+
+    <main class="main-content">
+      {{ block "main" . }}{{ end }}
+    </main>
+
+  </div>
+
+  <script>
+  var toggle = document.getElementById('mobileToggle');
+  var sidebar = document.getElementById('sidebar');
+  toggle.addEventListener('click', function() {
+    sidebar.classList.toggle('open');
+  });
+  </script>
 
   {{ block "scripts" . }}{{ end }}
 
