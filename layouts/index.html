@@ -1,11 +1,14 @@
 {{ define "sidebar" }}
-<div class="sidebar-section-title">Regions</div>
-<ul class="filter-list" id="filterList">
-  <li><button class="filter-btn active" data-filter="all">All</button></li>
-</ul>
 {{ end }}
 
 {{ define "main" }}
+
+{{ if .Params.show_intro }}
+<div class="home-intro">
+  <h1 class="home-heading">{{ .Params.intro_heading }}</h1>
+  <p class="home-text">{{ .Params.intro_text }}</p>
+</div>
+{{ end }}
 
 <div class="photo-grid" id="photoGrid">
   {{ range where .Site.RegularPages "Section" "photos" }}
@@ -37,40 +40,9 @@
 
 {{ define "scripts" }}
 <script>
-var cards = document.querySelectorAll('.photo-card');
-var regions = [];
-cards.forEach(function(c) {
-  var r = c.getAttribute('data-region');
-  if (r && regions.indexOf(r) === -1) regions.push(r);
-});
-regions.sort();
-var filterList = document.getElementById('filterList');
-regions.forEach(function(r) {
-  var li = document.createElement('li');
-  var b = document.createElement('button');
-  b.className = 'filter-btn';
-  b.setAttribute('data-filter', r);
-  b.textContent = r.charAt(0).toUpperCase() + r.slice(1);
-  li.appendChild(b);
-  filterList.appendChild(li);
-});var allCards = Array.prototype.slice.call(cards);
+var allCards = Array.prototype.slice.call(document.querySelectorAll('.photo-card'));
 var visibleCards = allCards.slice();
 
-document.querySelectorAll('.filter-btn').forEach(function(btn) {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
-    btn.classList.add('active');
-    var f = btn.getAttribute('data-filter');
-    allCards.forEach(function(c) {
-      if (f === 'all' || c.getAttribute('data-region') === f) {
-        c.style.display = '';
-      } else {
-        c.style.display = 'none';
-      }
-    });
-    visibleCards = allCards.filter(function(c) { return c.style.display !== 'none'; });
-  });
-});
 
 var lb = document.getElementById('lightbox');
 var lbImg = document.getElementById('lbImg');
@@ -154,5 +126,27 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowRight') nextLb();
   if (e.key === 'ArrowLeft') prevLb();
 });
+
+// Reveal animation
+allCards.forEach(function(c) {
+  c.style.opacity = '0';
+});
+
+function revealCards() {
+  var delay = 0;
+  allCards.forEach(function(card) {
+    if (card.style.opacity === '0') {
+      var rect = card.getBoundingClientRect();
+      if (rect.top < window.innerHeight - 60) {
+        setTimeout(function() {
+          card.style.animation = 'revealUp 0.6s ease forwards';
+        }, delay);
+        delay += 80;
+      }
+    }
+  });
+}
+setTimeout(revealCards, 100);
+window.addEventListener('scroll', revealCards);
 </script>
 {{ end }}
