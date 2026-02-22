@@ -10,9 +10,23 @@
 </div>
 {{ end }}
 
+<div class="filter-bar" id="filterBar">
+  <div class="filter-group">
+    <select id="regionFilter" class="filter-select">
+      <option value="all">All Regions</option>
+    </select>
+    <select id="yearFilter" class="filter-select">
+      <option value="all">All Years</option>
+    </select>
+    <button id="sortToggle" class="filter-select sort-btn">Newest First</button>
+	<button id="randomizeBtn" class="filter-select sort-btn">Randomize</button>
+  </div>
+  <div class="filter-count" id="filterCount"></div>
+</div>
+
 <div class="photo-grid" id="photoGrid">
   {{ range where .Site.RegularPages "Section" "photos" }}
-  <div class="photo-card" data-region="{{ .Params.region }}" data-title="{{ .Title }}" data-location="{{ .Params.location }}" data-year="{{ .Params.year }}" data-src="{{ .Params.image }}">
+  <div class="photo-card" data-region="{{ .Params.region }}" data-title="{{ .Title }}" data-location="{{ .Params.location }}" data-year="{{ .Params.year }}" data-src="{{ .Params.image }}" data-date="{{ .Date.Format "2006-01-02" }}">
     <img src="{{ .Params.image }}" alt="{{ .Title }}" loading="lazy">
     <div class="card-overlay">
       <div class="card-title">{{ .Title }}</div>
@@ -20,6 +34,10 @@
     </div>
   </div>
   {{ end }}
+</div>
+
+<div class="load-more-wrap" id="loadMoreWrap">
+  <button id="loadMoreBtn" class="load-more-btn">Load More</button>
 </div>
 
 <div class="lightbox" id="lightbox">
@@ -40,10 +58,172 @@
 
 {{ define "scripts" }}
 <script>
+var BATCH = 30;
 var allCards = Array.prototype.slice.call(document.querySelectorAll('.photo-card'));
-var visibleCards = allCards.slice();
+var filteredCards = allCards.slice();
+var visibleCards = [];
+var showCount = BATCH;
+var sortNewest = true;
 
+// Build region dropdown
+var regions = [];
+allCards.forEach(function(c) {
+  var r = c.getAttribute('data-region');
+  if (r && regions.indexOf(r) === -1) regions.push(r);
+});
+regions.sort();
+var regionSelect = document.getElementById('regionFilter');
+regions.forEach(function(r) {
+  var opt = document.createElement('option');
+  opt.value = r;
+  opt.textContent = r.charAt(0).toUpperCase() + r.slice(1).replace(/-/g, ' ');
+  regionSelect.appendChild(opt);
+});
 
+// Build year dropdown
+var years = [];
+allCards.forEach(function(c) {
+  var y = c.getAttribute('data-year');
+  if (y && years.indexOf(y) === -1) years.push(y);
+});
+years.sort().reverse();
+var yearSelect = document.getElementById('yearFilter');
+years.forEach(function(y) {
+  var opt = document.createElement('option');
+  opt.value = y;
+  opt.textContent = y;
+  yearSelect.appendChild(opt);
+});
+
+// Filter and display logic
+function applyFilters() {
+  var region = regionSelect.value;
+  var year = yearSelect.value;
+
+  filteredCards = allCards.filter(function(c) {
+    var matchRegion = (region === 'all' || c.getAttribute('data-region') === region);
+    var matchYear = (year === 'all' || c.getAttribute('data-year') === year);
+    return matchRegion && matchYear;
+  });
+
+  // Sort
+  filteredCards.sort(function(a, b) {
+    var da = a.getAttribute('data-date');
+    var db = b.getAttribute('data-date');
+    if (sortNewest) return da < db ? 1 : da > db ? -1 : 0;
+    return da > db ? 1 : da < db ? -1 : 0;
+  });
+
+  showCount = BATCH;
+  renderGrid();
+}
+
+function renderGrid() {
+  // Hide all cards first
+  allCards.forEach(function(c) {
+    c.style.display = 'none';
+    c.classList.remove('reveal-visible');
+    c.classList.remove('reveal-hidden');
+  });
+
+  // Reorder in DOM
+  var grid = document.getElementById('photoGrid');
+  filteredCards.forEach(function(c) {
+    grid.appendChild(c);
+  });
+
+  // Show up to showCount
+  visibleCards = filteredCards.slice(0, showCount);
+  visibleCards.forEach(function(c) {
+    c.style.display = '';
+    c.classList.add('reveal-hidden');
+  });
+
+  // Update count
+  var countEl = document.getElementById('filterCount');
+  if (filteredCards.length === allCards.length) {
+    countEl.textContent = filteredCards.length + ' photos';
+  } else {
+    countEl.textContent = 'Showing ' + visibleCards.length + ' of ' + filteredCards.length + ' photos';
+  }
+
+  // Load more button
+  var loadMoreWrap = document.getElementById('loadMoreWrap');
+  if (showCount >= filteredCards.length) {
+    loadMoreWrap.style.display = 'none';
+  } else {
+    loadMoreWrap.style.display = '';
+  }
+
+  // Trigger reveal animation
+  setTimeout(function() {
+    var delay = 0;
+    visibleCards.forEach(function(card) {
+      var rect = card.getBoundingClientRect();
+      if (rect.top < window.innerHeight + 100) {
+        setTimeout(function() {
+          card.classList.remove('reveal-hidden');
+          card.classList.add('reveal-visible');
+        }, delay);
+        delay += 50;
+      } else {
+        card.classList.remove('reveal-hidden');
+        card.classList.add('reveal-visible');
+      }
+    });
+  }, 50);
+}
+
+function loadMore() {
+  showCount += BATCH;
+  renderGrid();
+  // Scroll reveal for newly visible cards
+  setTimeout(revealOnScroll, 100);
+}
+
+function revealOnScroll() {
+  var hidden = document.querySelectorAll('.photo-card.reveal-hidden');
+  var delay = 0;
+  hidden.forEach(function(card) {
+    var rect = card.getBoundingClientRect();
+    if (rect.top < window.innerHeight - 60) {
+      setTimeout(function() {
+        card.classList.remove('reveal-hidden');
+        card.classList.add('reveal-visible');
+      }, delay);
+      delay += 50;
+    }
+  });
+}
+
+// Event listeners
+regionSelect.addEventListener('change', applyFilters);
+yearSelect.addEventListener('change', applyFilters);
+
+document.getElementById('sortToggle').addEventListener('click', function() {
+  sortNewest = !sortNewest;
+  this.textContent = sortNewest ? 'Newest First' : 'Oldest First';
+  applyFilters();
+});
+
+document.getElementById('randomizeBtn').addEventListener('click', function() {
+  for (var i = filteredCards.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var temp = filteredCards[i];
+    filteredCards[i] = filteredCards[j];
+    filteredCards[j] = temp;
+  }
+  showCount = BATCH;
+  renderGrid();
+});
+
+document.getElementById('loadMoreBtn').addEventListener('click', loadMore);
+window.addEventListener('scroll', revealOnScroll);
+
+// Initial render
+applyFilters();
+
+// Lightbox
 var lb = document.getElementById('lightbox');
 var lbImg = document.getElementById('lbImg');
 var lbTitle = document.getElementById('lbTitle');
@@ -126,27 +306,5 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowRight') nextLb();
   if (e.key === 'ArrowLeft') prevLb();
 });
-
-// Reveal animation
-allCards.forEach(function(c) {
-  c.style.opacity = '0';
-});
-
-function revealCards() {
-  var delay = 0;
-  allCards.forEach(function(card) {
-    if (card.style.opacity === '0') {
-      var rect = card.getBoundingClientRect();
-      if (rect.top < window.innerHeight - 60) {
-        setTimeout(function() {
-          card.style.animation = 'revealUp 0.6s ease forwards';
-        }, delay);
-        delay += 80;
-      }
-    }
-  });
-}
-setTimeout(revealCards, 100);
-window.addEventListener('scroll', revealCards);
 </script>
 {{ end }}
