@@ -10,6 +10,16 @@
 </div>
 {{ end }}
 
+{{ $photos := where .Site.RegularPages "Section" "photos" }}
+{{ $rand := index $photos (mod now.UnixNano (len $photos)) }}
+<div class="hero-image" id="heroImage" data-src="{{ $rand.Params.image }}" data-title="{{ $rand.Title }}" data-location="{{ $rand.Params.location }}" data-year="{{ $rand.Params.year }}">
+  <img src="{{ $rand.Params.image }}" alt="{{ $rand.Title }}">
+  <div class="hero-overlay">
+    <div class="hero-title">{{ $rand.Title }}</div>
+    <div class="hero-meta">{{ $rand.Params.location }} &middot; {{ $rand.Params.year }}</div>
+  </div>
+</div>
+
 <div class="filter-bar" id="filterBar">
   <div class="filter-group">
     <select id="regionFilter" class="filter-select">
@@ -20,6 +30,7 @@
     </select>
     <button id="sortToggle" class="filter-select sort-btn">Newest First</button>
 	<button id="randomizeBtn" class="filter-select sort-btn">Randomize</button>
+	<button id="resetFilters" class="reset-btn">Reset</button>
   </div>
   <div class="filter-count" id="filterCount"></div>
 </div>
@@ -34,7 +45,7 @@
     </div>
   </div>
   {{ end }}
-</div>
+</div>& 'C:\Program Files\Notepad++\notepad++.exe' C:\Users\darot\Documents\silvrshadz\layouts\index.html
 
 <div class="load-more-wrap" id="loadMoreWrap">
   <button id="loadMoreBtn" class="load-more-btn">Load More</button>
@@ -217,6 +228,14 @@ document.getElementById('randomizeBtn').addEventListener('click', function() {
   renderGrid();
 });
 
+document.getElementById('resetFilters').addEventListener('click', function() {
+  regionSelect.value = 'all';
+  yearSelect.value = 'all';
+  sortNewest = true;
+  document.getElementById('sortToggle').textContent = 'Newest First';
+  applyFilters();
+});
+
 document.getElementById('loadMoreBtn').addEventListener('click', loadMore);
 window.addEventListener('scroll', revealOnScroll);
 
@@ -293,6 +312,23 @@ allCards.forEach(function(c) {
     var idx = visibleCards.indexOf(c);
     if (idx !== -1) openLb(idx);
   });
+});
+
+// Hero click opens lightbox at random position
+document.getElementById('heroImage').addEventListener('click', function() {
+  var heroSrc = this.getAttribute('data-src');
+  // Find this image in allCards
+  for (var i = 0; i < allCards.length; i++) {
+    if (allCards[i].getAttribute('data-src') === heroSrc) {
+      // Make sure this card is visible for lightbox cycling
+      if (visibleCards.indexOf(allCards[i]) === -1) {
+        visibleCards = filteredCards.slice();
+      }
+      var idx = visibleCards.indexOf(allCards[i]);
+      if (idx !== -1) openLb(idx);
+      break;
+    }
+  }
 });
 
 document.querySelector('.lb-close').addEventListener('click', closeLb);
