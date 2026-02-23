@@ -283,6 +283,9 @@ function updateLb() {
 function nextLb() {
   lbImg.style.opacity = '0';
   lbImg.style.transform = 'scale(0.92)';
+  lbTitle.style.opacity = '0';
+  lbMeta.style.opacity = '0';
+  lbCounter.style.opacity = '0';
   setTimeout(function() {
     ci = (ci + 1) % visibleCards.length;
     var c = visibleCards[ci];
@@ -295,6 +298,9 @@ function nextLb() {
       setTimeout(function() {
         lbImg.style.opacity = '1';
         lbImg.style.transform = 'scale(1)';
+        lbTitle.style.opacity = '1';
+        lbMeta.style.opacity = '1';
+        lbCounter.style.opacity = '1';
       }, 50);
     };
     lbImg.removeAttribute('src');
@@ -305,6 +311,9 @@ function nextLb() {
 function prevLb() {
   lbImg.style.opacity = '0';
   lbImg.style.transform = 'scale(0.92)';
+  lbTitle.style.opacity = '0';
+  lbMeta.style.opacity = '0';
+  lbCounter.style.opacity = '0';
   setTimeout(function() {
     ci = (ci - 1 + visibleCards.length) % visibleCards.length;
     var c = visibleCards[ci];
@@ -317,6 +326,9 @@ function prevLb() {
       setTimeout(function() {
         lbImg.style.opacity = '1';
         lbImg.style.transform = 'scale(1)';
+        lbTitle.style.opacity = '1';
+        lbMeta.style.opacity = '1';
+        lbCounter.style.opacity = '1';
       }, 50);
     };
     lbImg.removeAttribute('src');

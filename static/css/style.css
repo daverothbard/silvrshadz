@@ -304,6 +304,7 @@ body {
   font-weight: 500;
   color: rgba(255,255,255,0.9);
   letter-spacing: 0.02em;
+  transition: opacity 0.25s ease;
 }
 
 .lb-meta {
@@ -312,6 +313,7 @@ body {
   color: rgba(255,255,255,0.5);
   letter-spacing: 0.06em;
   margin-top: 0.3rem;
+  transition: opacity 0.25s ease;
 }
 
 .lb-nav {
@@ -350,6 +352,7 @@ body {
   font-weight: 300;
   color: rgba(255,255,255,0.35);
   letter-spacing: 0.1em;
+  transition: opacity 0.25s ease;
 }
 
 /* ==========================================
