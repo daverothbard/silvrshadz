@@ -10,13 +10,11 @@
 </div>
 {{ end }}
 
-{{ $photos := where .Site.RegularPages "Section" "photos" }}
-{{ $rand := index $photos (mod now.UnixNano (len $photos)) }}
-<div class="hero-image" id="heroImage" data-src="{{ $rand.Params.image }}" data-title="{{ $rand.Title }}" data-location="{{ $rand.Params.location }}" data-year="{{ $rand.Params.year }}">
-  <img src="{{ $rand.Params.image }}" alt="{{ $rand.Title }}">
+<div class="hero-image" id="heroImage" data-src="" data-title="" data-location="" data-year="">
+  <img id="heroImg" src="" alt="">
   <div class="hero-overlay">
-    <div class="hero-title">{{ $rand.Title }}</div>
-    <div class="hero-meta">{{ $rand.Params.location }} &middot; {{ $rand.Params.year }}</div>
+    <div class="hero-title" id="heroTitle"></div>
+    <div class="hero-meta" id="heroMeta"></div>
   </div>
 </div>
 
@@ -314,13 +312,27 @@ allCards.forEach(function(c) {
   });
 });
 
-// Hero click opens lightbox at random position
-document.getElementById('heroImage').addEventListener('click', function() {
+// Random hero image
+var heroEl = document.getElementById('heroImage');
+var heroImg = document.getElementById('heroImg');
+var heroTitle = document.getElementById('heroTitle');
+var heroMeta = document.getElementById('heroMeta');
+var randIdx = Math.floor(Math.random() * allCards.length);
+var randCard = allCards[randIdx];
+heroEl.setAttribute('data-src', randCard.getAttribute('data-src'));
+heroEl.setAttribute('data-title', randCard.getAttribute('data-title'));
+heroEl.setAttribute('data-location', randCard.getAttribute('data-location'));
+heroEl.setAttribute('data-year', randCard.getAttribute('data-year'));
+heroImg.src = randCard.getAttribute('data-src');
+heroImg.alt = randCard.getAttribute('data-title');
+heroTitle.textContent = randCard.getAttribute('data-title');
+heroMeta.textContent = randCard.getAttribute('data-location') + ' \u00B7 ' + randCard.getAttribute('data-year');
+
+// Hero click opens lightbox
+heroEl.addEventListener('click', function() {
   var heroSrc = this.getAttribute('data-src');
-  // Find this image in allCards
   for (var i = 0; i < allCards.length; i++) {
     if (allCards[i].getAttribute('data-src') === heroSrc) {
-      // Make sure this card is visible for lightbox cycling
       if (visibleCards.indexOf(allCards[i]) === -1) {
         visibleCards = filteredCards.slice();
       }
