@@ -252,7 +252,7 @@ var ci = 0;
 
 function openLb(i) {
   ci = i;
-  var c = visibleCards[ci];
+  var c = filteredCards[ci];
   lbImg.src = c.getAttribute('data-src');
   lbImg.alt = c.getAttribute('data-title');
   updateLb();
@@ -276,10 +276,10 @@ function closeLb() {
 }
 
 function updateLb() {
-  var c = visibleCards[ci];
+  var c = filteredCards[ci];
   lbTitle.textContent = c.getAttribute('data-title');
   lbMeta.textContent = c.getAttribute('data-location') + ' \u00B7 ' + c.getAttribute('data-year');
-  lbCounter.textContent = (ci + 1) + ' / ' + visibleCards.length;
+  lbCounter.textContent = (ci + 1) + ' / ' + filteredCards.length;
 }
 
 function nextLb() {
@@ -289,8 +289,8 @@ function nextLb() {
   lbMeta.style.opacity = '0';
   lbCounter.style.opacity = '0';
   setTimeout(function() {
-    ci = (ci + 1) % visibleCards.length;
-    var c = visibleCards[ci];
+    ci = (ci + 1) % filteredCards.length;
+    var c = filteredCards[ci];
     var newSrc = c.getAttribute('data-src');
     var preload = new Image();
     preload.onload = function() {
@@ -317,8 +317,8 @@ function prevLb() {
   lbMeta.style.opacity = '0';
   lbCounter.style.opacity = '0';
   setTimeout(function() {
-    ci = (ci - 1 + visibleCards.length) % visibleCards.length;
-    var c = visibleCards[ci];
+    ci = (ci - 1 + filteredCards.length) % filteredCards.length;
+    var c = filteredCards[ci];
     var newSrc = c.getAttribute('data-src');
     var preload = new Image();
     preload.onload = function() {
@@ -340,7 +340,7 @@ function prevLb() {
 
 allCards.forEach(function(c) {
   c.addEventListener('click', function() {
-    var idx = visibleCards.indexOf(c);
+    var idx = filteredCards.indexOf(c);
     if (idx !== -1) openLb(idx);
   });
 });
@@ -366,10 +366,7 @@ heroEl.addEventListener('click', function() {
   var heroSrc = this.getAttribute('data-src');
   for (var i = 0; i < allCards.length; i++) {
     if (allCards[i].getAttribute('data-src') === heroSrc) {
-      if (visibleCards.indexOf(allCards[i]) === -1) {
-        visibleCards = filteredCards.slice();
-      }
-      var idx = visibleCards.indexOf(allCards[i]);
+      var idx = filteredCards.indexOf(allCards[i]);
       if (idx !== -1) openLb(idx);
       break;
     }

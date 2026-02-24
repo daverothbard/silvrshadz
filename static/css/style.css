@@ -624,11 +624,26 @@ body {
 
   .filter-group {
     width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
   }
 
   .filter-select {
-    flex: 1;
     min-width: 0;
+    font-size: 0.72rem;
+    padding: 0.45rem 0.5rem;
+  }
+
+  .sort-btn,
+  .reset-btn {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 400px) {
+  .filter-group {
+    grid-template-columns: 1fr;
   }
 }
 
