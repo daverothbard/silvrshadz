@@ -1,0 +1,20 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "static/images"
+public_folder: "/images"
+
+collections:
+  - name: "photos"
+    label: "Blog Photos"
+    folder: "content/photos"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Date", name: "date", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false }
+      - { label: "Image", name: "image", widget: "image" }
+      - { label: "Location", name: "location", widget: "string" }
+      - { label: "Year", name: "year", widget: "string" }
+      - { label: "Region", name: "region", widget: "select", options: ["virginia", "maryland", "dc", "florida", "pennsylvania", "west-virginia", "portugal", "new-york", "illinois", "california", "france", "italy", "hungary", "canada", "massachusetts", "tennessee", "connecticut", "other"] }
