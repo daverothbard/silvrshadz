@@ -10,7 +10,7 @@
 </div>
 {{ end }}
 
-<h2 class="section-heading centered">Featured Photo</h2>
+<h2 class="section-heading centered">Featured Photo of the Day</h2>
 <div class="hero-image" id="heroImage" data-src="" data-title="" data-location="" data-year="">
   <img id="heroImg" src="" alt="">
   <div class="hero-overlay">
@@ -20,6 +20,7 @@
 </div>
 
 <h2 class="section-heading ruled">Blog Photos</h2>
+
 <div class="filter-bar" id="filterBar">
   <div class="filter-group">
     <select id="regionFilter" class="filter-select">
@@ -29,21 +30,27 @@
       <option value="all">All Years</option>
     </select>
     <button id="sortToggle" class="filter-select sort-btn">Newest First</button>
-	<button id="randomizeBtn" class="filter-select sort-btn">Randomize</button>
-	<button id="resetFilters" class="reset-btn">Reset</button>
+    <button id="randomizeBtn" class="filter-select sort-btn">Randomize</button>
+    <button id="resetFilters" class="reset-btn">Reset</button>
   </div>
   <div class="filter-count" id="filterCount"></div>
 </div>
 
 <div class="photo-grid" id="photoGrid">
   {{ range where .Site.RegularPages "Section" "photos" }}
-  <div class="photo-card" data-region="{{ .Params.region }}" data-title="{{ .Title }}" data-location="{{ .Params.location }}" data-year="{{ .Params.year }}" data-src="{{ .Params.image }}" data-date="{{ .Date.Format "2006-01-02" }}">
-    <img src="{{ .Params.image }}" alt="{{ .Title }}" loading="lazy">
+  {{ $imgPath := strings.TrimPrefix "/" .Params.image }}
+  {{ $img := resources.Get $imgPath }}
+  {{ if $img }}
+  {{ $thumb := $img.Resize "600x q85" }}
+  {{ $full := $img.Resize "1600x q90" }}
+  <div class="photo-card" data-region="{{ .Params.region }}" data-title="{{ .Title }}" data-location="{{ .Params.location }}" data-year="{{ .Params.year }}" data-src="{{ $full.RelPermalink }}" data-date="{{ .Date.Format "2006-01-02" }}">
+    <img src="{{ $thumb.RelPermalink }}" alt="{{ .Title }}" loading="lazy">
     <div class="card-overlay">
       <div class="card-title">{{ .Title }}</div>
       <div class="card-meta">{{ .Params.location }} &middot; {{ .Params.year }}</div>
     </div>
   </div>
+  {{ end }}
   {{ end }}
 </div>
 
@@ -130,27 +137,23 @@ function applyFilters() {
 }
 
 function renderGrid() {
-  // Hide all cards first
   allCards.forEach(function(c) {
     c.style.display = 'none';
     c.classList.remove('reveal-visible');
     c.classList.remove('reveal-hidden');
   });
 
-  // Reorder in DOM
   var grid = document.getElementById('photoGrid');
   filteredCards.forEach(function(c) {
     grid.appendChild(c);
   });
 
-  // Show up to showCount
   visibleCards = filteredCards.slice(0, showCount);
   visibleCards.forEach(function(c) {
     c.style.display = '';
     c.classList.add('reveal-hidden');
   });
 
-  // Update count
   var countEl = document.getElementById('filterCount');
   if (filteredCards.length === allCards.length) {
     countEl.textContent = filteredCards.length + ' photos';
@@ -158,7 +161,6 @@ function renderGrid() {
     countEl.textContent = 'Showing ' + visibleCards.length + ' of ' + filteredCards.length + ' photos';
   }
 
-  // Load more button
   var loadMoreWrap = document.getElementById('loadMoreWrap');
   if (showCount >= filteredCards.length) {
     loadMoreWrap.style.display = 'none';
@@ -166,7 +168,6 @@ function renderGrid() {
     loadMoreWrap.style.display = '';
   }
 
-  // Trigger reveal animation
   setTimeout(function() {
     var delay = 0;
     visibleCards.forEach(function(card) {
@@ -188,7 +189,6 @@ function renderGrid() {
 function loadMore() {
   showCount += BATCH;
   renderGrid();
-  // Scroll reveal for newly visible cards
   setTimeout(revealOnScroll, 100);
 }
 
@@ -207,7 +207,6 @@ function revealOnScroll() {
   });
 }
 
-// Event listeners
 regionSelect.addEventListener('change', applyFilters);
 yearSelect.addEventListener('change', applyFilters);
 
@@ -239,8 +238,34 @@ document.getElementById('resetFilters').addEventListener('click', function() {
 document.getElementById('loadMoreBtn').addEventListener('click', loadMore);
 window.addEventListener('scroll', revealOnScroll);
 
-// Initial render
 applyFilters();
+
+// Random hero image
+var heroEl = document.getElementById('heroImage');
+var heroImg = document.getElementById('heroImg');
+var heroTitle = document.getElementById('heroTitle');
+var heroMeta = document.getElementById('heroMeta');
+var randIdx = Math.floor(Math.random() * allCards.length);
+var randCard = allCards[randIdx];
+heroEl.setAttribute('data-src', randCard.getAttribute('data-src'));
+heroEl.setAttribute('data-title', randCard.getAttribute('data-title'));
+heroEl.setAttribute('data-location', randCard.getAttribute('data-location'));
+heroEl.setAttribute('data-year', randCard.getAttribute('data-year'));
+heroImg.src = randCard.getAttribute('data-src');
+heroImg.alt = randCard.getAttribute('data-title');
+heroTitle.textContent = randCard.getAttribute('data-title');
+heroMeta.textContent = randCard.getAttribute('data-location') + ' \u00B7 ' + randCard.getAttribute('data-year');
+
+heroEl.addEventListener('click', function() {
+  var heroSrc = this.getAttribute('data-src');
+  for (var i = 0; i < allCards.length; i++) {
+    if (allCards[i].getAttribute('data-src') === heroSrc) {
+      var idx = filteredCards.indexOf(allCards[i]);
+      if (idx !== -1) openLb(idx);
+      break;
+    }
+  }
+});
 
 // Lightbox
 var lb = document.getElementById('lightbox');
@@ -343,34 +368,6 @@ allCards.forEach(function(c) {
     var idx = filteredCards.indexOf(c);
     if (idx !== -1) openLb(idx);
   });
-});
-
-// Random hero image
-var heroEl = document.getElementById('heroImage');
-var heroImg = document.getElementById('heroImg');
-var heroTitle = document.getElementById('heroTitle');
-var heroMeta = document.getElementById('heroMeta');
-var randIdx = Math.floor(Math.random() * allCards.length);
-var randCard = allCards[randIdx];
-heroEl.setAttribute('data-src', randCard.getAttribute('data-src'));
-heroEl.setAttribute('data-title', randCard.getAttribute('data-title'));
-heroEl.setAttribute('data-location', randCard.getAttribute('data-location'));
-heroEl.setAttribute('data-year', randCard.getAttribute('data-year'));
-heroImg.src = randCard.getAttribute('data-src');
-heroImg.alt = randCard.getAttribute('data-title');
-heroTitle.textContent = randCard.getAttribute('data-title');
-heroMeta.textContent = randCard.getAttribute('data-location') + ' \u00B7 ' + randCard.getAttribute('data-year');
-
-// Hero click opens lightbox
-heroEl.addEventListener('click', function() {
-  var heroSrc = this.getAttribute('data-src');
-  for (var i = 0; i < allCards.length; i++) {
-    if (allCards[i].getAttribute('data-src') === heroSrc) {
-      var idx = filteredCards.indexOf(allCards[i]);
-      if (idx !== -1) openLb(idx);
-      break;
-    }
-  }
 });
 
 document.querySelector('.lb-close').addEventListener('click', closeLb);
