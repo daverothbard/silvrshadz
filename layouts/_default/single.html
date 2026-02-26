@@ -1,6 +1,17 @@
 {{ define "main" }}
-<div class="page-content">
-  <h1>{{ .Title }}</h1>
-  {{ .Content }}
+<div class="about-wrapper">
+  <h1 class="about-heading">{{ .Title }}</h1>
+  <div class="about-layout">
+    <div class="about-text">
+      {{ .Content }}
+    </div>
+    <div class="about-image">
+      {{ $img := resources.Get "images/DSCF2596.jpg" }}
+      {{ if $img }}
+      {{ $sized := $img.Resize "800x q90" }}
+      <img src="{{ $sized.RelPermalink }}" alt="Photography by David Rothbard">
+      {{ end }}
+    </div>
+  </div>
 </div>
 {{ end }}
